@@ -19,6 +19,9 @@ export class PhoneVerificationService {
     });
 
     if (existingEntry) {
+      if (existingEntry.authentication) {
+        throw new BadRequestException('이미 인증된 번호입니다.');
+      }
       // 기존 레코드가 있으면 업데이트
       existingEntry.code = code;
       existingEntry.expiredAt = expiredAt;
