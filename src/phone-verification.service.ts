@@ -29,6 +29,7 @@ export class PhoneVerificationService {
         phoneNumber,
         code,
         expiredAt,
+        authentication: false,
       });
       await this.phoneRepository.save(newEntry);
     }
@@ -47,7 +48,6 @@ export class PhoneVerificationService {
 
     const now = new Date();
     if (now > entry.expiredAt) {
-      await this.phoneRepository.delete({ phoneNumber });
       throw new BadRequestException('인증번호가 만료되었습니다.');
     }
 
@@ -55,7 +55,7 @@ export class PhoneVerificationService {
       throw new BadRequestException('인증번호가 일치하지 않습니다.');
     }
 
-    await this.phoneRepository.delete({ phoneNumber });
+    await this.phoneRepository.update(entry.id, { authentication: true });
     return true;
   }
   private generateVerificationCode(): string {
