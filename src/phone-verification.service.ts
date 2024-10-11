@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Phone } from './phone.entity';
 import { Repository } from 'typeorm';
@@ -36,6 +36,28 @@ export class PhoneVerificationService {
     return code;
   }
 
+  async verifyCode(phoneNumber: string, code: string): Promise<boolean> {
+    const entry = await this.phoneRepository.findOne({
+      where: { phoneNumber },
+    });
+
+    if (!entry) {
+      throw new BadRequestException('인증번호가 존재하지 않습니다.');
+    }
+
+    const now = new Date();
+    if (now > entry.expiredAt) {
+      await this.phoneRepository.delete({ phoneNumber });
+      throw new BadRequestException('인증번호가 만료되었습니다.');
+    }
+
+    if (entry.code !== code) {
+      throw new BadRequestException('인증번호가 일치하지 않습니다.');
+    }
+
+    await this.phoneRepository.delete({ phoneNumber });
+    return true;
+  }
   private generateVerificationCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
