@@ -13,4 +13,7 @@ export class Phone {
 
   @Column()
   expiredAt: Date;
+
+  @Column()
+  authentication: boolean;
 }
